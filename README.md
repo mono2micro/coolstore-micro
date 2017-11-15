@@ -42,6 +42,52 @@ oc new-project coolstore
 oc process -f openshift/coolstore-template.yaml | oc create -f -
 ```
 
+Manual workaround for MongoDB
+================
+Unfortunately, the rating-mongodb component will fail unless we manually intervene in the process.  Therefore, run through the following steps to address this issue:
+
+1. Via the Openshift UI, update the deployment config for `rating-mongodb` by removing the following lines from the rating-mongodb section:
+```
+      recreateParams:
+        post:
+          execNewPod:
+            command:
+              - /bin/sh
+              - -i
+              - -c
+              - env && while ! mongo ${RATING_MONGODB_SERVICE_HOST}:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval="$MONGODB_INIT" > /dev/null 2>&1; do echo "waiting for mongo ..."; sleep 5; done
+            containerName: rating-mongodb
+            env:
+            - name: MONGODB_INIT
+              value: db.ratings.insert({"_id":"329299","itemId":"329299","rating":5.0,"count":1});
+                db.ratings.insert({"_id":"329199","itemId":"329199","rating":1.0,"count":12});
+                db.ratings.insert({"_id":"165613","itemId":"165613","rating":2.3,"count":31});
+                db.ratings.insert({"_id":"165614","itemId":"165614","rating":3.0,"count":51});
+                db.ratings.insert({"_id":"165954","itemId":"165954","rating":4.0,"count":66});
+                db.ratings.insert({"_id":"444434","itemId":"444434","rating":5.0,"count":76});
+                db.ratings.insert({"_id":"444435","itemId":"444435","rating":4.0,"count":83});
+                db.ratings.insert({"_id":"444436","itemId":"444436","rating":3.0,"count":123});
+          failurePolicy: ignore
+        timeoutSeconds: 600
+```
+2. Rebuild the rating-mongodb POD
+3. RSH to the rating-mongodb pod via `oc rsh rating-mongodb-2-*****`.
+4. Login to mongodb like so: mongo ${RATING_MONGODB_SERVICE_HOST}:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+5. Manually insert the records into mongo, line by line:
+```
+db.ratings.insert({"_id":"329299","itemId":"329299","rating":5.0,"count":1});
+db.ratings.insert({"_id":"329199","itemId":"329199","rating":1.0,"count":12});
+db.ratings.insert({"_id":"165613","itemId":"165613","rating":2.3,"count":31});
+db.ratings.insert({"_id":"165614","itemId":"165614","rating":3.0,"count":51});
+db.ratings.insert({"_id":"165954","itemId":"165954","rating":4.0,"count":66});
+db.ratings.insert({"_id":"444434","itemId":"444434","rating":5.0,"count":76});
+db.ratings.insert({"_id":"444435","itemId":"444435","rating":4.0,"count":83});
+db.ratings.insert({"_id":"444436","itemId":"444436","rating":3.0,"count":123});
+```
+6. Setup SSO in the same Openshift project, by following the instructions in `/SSO`, ensuring you use HTTPS.
+
+Test Deployment
+================
 When all pods are deployed, verify all services are functioning:
 ```
 oc rsh $(oc get pods -o name -l app=coolstore-gw)
