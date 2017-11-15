@@ -802,7 +802,7 @@ objects:
     labels:
       app: rating
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: rating
     strategy:
@@ -910,7 +910,7 @@ objects:
       comp-type: database
     name: rating-mongodb
   spec:
-    replicas: 0
+    replicas: 1
     selector:
       deploymentconfig: rating-mongodb
     strategy:
