@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CartItem} from './cartitem';
 import {CartService} from './cart.service';
 import {Subscription} from 'rxjs/Subscription';
-import {Action, ActionConfig, EmptyStateConfig, ListConfig} from 'patternfly-ng';
+import {Action, ActionConfig, CardConfig, EmptyStateConfig, ListConfig} from 'patternfly-ng';
 import {Router} from '@angular/router';
 
 @Component({
@@ -15,6 +15,7 @@ export class CartComponent implements OnInit, OnDestroy {
   items: CartItem[];
   listConfig: ListConfig;
   emptyStateConfig: EmptyStateConfig;
+  summaryConfig: CardConfig;
   private subscription: Subscription;
 
   constructor(private cartService: CartService, private router: Router) {
@@ -34,6 +35,9 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.summaryConfig = {
+    } as CardConfig;
+
     this.emptyStateConfig = {
       actions: {
         primaryActions: [{
