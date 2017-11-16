@@ -1,0 +1,46 @@
+        try {
+           timeout(time: 20, unit: 'MINUTES') {
+              def appName="web-ui"
+              def project=""
+
+              node {
+                stage("Initialize") {
+                  project = "web-ui"
+                }
+              }
+
+              node("maven") {
+                stage("Checkout") {
+                  git url: "https://github.com/mono2micro/coolstore-micro.git", branch: "1.1.x"
+                }
+
+                stage("Build Spring Boot JAR") {
+                  // *** Uncomment for 1st Run *** if Lab 1 was skipped
+                  // sh "mvn clean fabric8:deploy -Popenshift --file lab/pom.xml"
+                  // sh "mvn clean package -Popenshift --file coolstore-ui/pom.xml"
+                  // stash name:"jar", includes:"lab/target/product-catalog.jar"
+		  openshiftBuild apiURL: '', authToken: '', bldCfg: 'web-ui', buildName: '', checkForTriggeredDeployments: 'false', commitID: '', namespace: '', showBuildLogs: 'false', verbose: 'false', waitTime: '', waitUnit: 'sec'
+                }
+              }
+
+              node {
+                stage("Deploy") {
+                  openshiftDeploy deploymentConfig: "web-ui"
+                }
+                stage("Smoke Test") {
+                  sh 'curl http://product-catalog-spring-rhoar-lab01.cloudapps.keyvan.com/admin/productlist | grep -i "Admin - Product List"'
+                }
+              }
+           }
+        } catch (err) {
+           echo "in catch block"
+           echo "Caught: ${err}"
+           currentBuild.result = 'FAILURE'
+           throw err
+        }
+        node {
+          stage("Tag and Release Image") {
+            input "Promote next Release"
+            openshiftTag alias: 'false', apiURL: '', authToken: '', destStream: 'web-ui', destTag: 'next-release', destinationAuthToken: '', destinationNamespace: '', namespace: '', srcStream: 'web-ui', srcTag: 'latest', verbose: 'false'
+          }
+        }
