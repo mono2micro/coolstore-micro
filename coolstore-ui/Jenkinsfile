@@ -1,47 +1,44 @@
-        try {
-           timeout(time: 20, unit: 'MINUTES') {
-              def appName="web-ui"
-              def project=""
+#!/usr/bin/groovy
 
-              node {
-                stage("Initialize") {
-                  project = "web-ui"
-                }
-              }
+/**
+ this section of the pipeline executes on the master, which has a lot of useful variables that we can leverage to configure our pipeline
+ **/
+node (''){
+    env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
+    env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
+    env.NAMESPACE_DEV=coolstore-micro-dev
+    env.NAMESPACE_TEST=coolstore-micro-demo
+    env.APP_NAME=coolstore-ui
+}
 
-              node("maven") {
-                stage("Checkout") {
-                  git url: "https://github.com/mono2micro/coolstore-micro.git", branch: "1.1.x"
-                }
+// Building on the master for this demo
+node('') {
 
-                stage("Build Web UI") {
-                  // *** Uncomment for 1st Run *** if Lab 1 was skipped
-                  // sh "mvn clean fabric8:deploy -Popenshift --file lab/pom.xml"
-                  // sh "mvn clean package -Popenshift --file coolstore-ui/pom.xml"
-                  // stash name:"jar", includes:"lab/target/product-catalog.jar"
-		  openshiftBuild apiURL: '', authToken: '', bldCfg: 'web-ui', buildName: '', checkForTriggeredDeployments: 'false', commitID: '', namespace: '', showBuildLogs: 'false', verbose: 'false', waitTime: '', waitUnit: 'sec'
-                }
-              }
+    stage('SCM Checkout') {
+        checkout scm
+    }
 
-              node {
-                stage("Deploy") {
-                  openshiftDeploy deploymentConfig: "web-ui"
-                }
-                stage("Smoke Test") {
-                  sh 'curl http://web-ui-coolstore-micro-pipeline.apps.c7.core.rht-labs.com/#/ | grep -i "Red Hat Cool Store MSA"'
-                }
-              }
-           }
-        } catch (err) {
-           echo "in catch block"
-           echo "Caught: ${err}"
-           currentBuild.result = 'FAILURE'
-           throw err
-        }
-        node {
-          stage("Tag and Release Image") {
-            input "Promote next Release"
-            openshiftTag alias: 'false', apiURL: '', authToken: '', destStream: 'web-ui', destTag: 'latest', destinationAuthToken: '', destinationNamespace: 'coolstore-micro-demo', namespace: '', srcStream: 'web-ui', srcTag: 'latest', verbose: 'false'
-//            openshiftTag alias: 'false', apiURL: '', authToken: '', destStream: 'web-ui', destTag: 'next-release', destinationAuthToken: '', destinationNamespace: '', namespace: '', srcStream: 'web-ui', srcTag: 'latest', verbose: 'false'
-          }
-        }
+    // Bundles up the current directory and sends it to OpenShift to run the s2i.
+    stage('Build Image') {
+        sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
+    }
+
+
+    // no user changes should be needed below this point
+    stage ('Deploy to Dev') {
+     //   input "Promote Application to Dev?"
+
+        openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+
+        openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
+    }
+
+    stage ('Deploy to Demo') {
+      //  input "Promote Application to Demo?"
+
+        openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_TEST}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+
+        openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_TEST}", verifyReplicaCount: true)
+    }
+
+}
