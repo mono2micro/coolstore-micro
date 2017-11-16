@@ -14,7 +14,7 @@
                   git url: "https://github.com/mono2micro/coolstore-micro.git", branch: "1.1.x"
                 }
 
-                stage("Build Spring Boot JAR") {
+                stage("Build Web UI") {
                   // *** Uncomment for 1st Run *** if Lab 1 was skipped
                   // sh "mvn clean fabric8:deploy -Popenshift --file lab/pom.xml"
                   // sh "mvn clean package -Popenshift --file coolstore-ui/pom.xml"
@@ -28,7 +28,7 @@
                   openshiftDeploy deploymentConfig: "web-ui"
                 }
                 stage("Smoke Test") {
-                  sh 'curl http://product-catalog-spring-rhoar-lab01.cloudapps.keyvan.com/admin/productlist | grep -i "Admin - Product List"'
+                  sh 'curl http://web-ui-coolstore-micro-pipeline.apps.c7.core.rht-labs.com/#/ | grep -i "Red Hat Cool Store MSA"'
                 }
               }
            }
