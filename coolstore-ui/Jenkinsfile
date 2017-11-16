@@ -6,9 +6,9 @@
 node (''){
     env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
     env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
-    env.NAMESPACE_DEV=coolstore-micro-dev
-    env.NAMESPACE_TEST=coolstore-micro-demo
-    env.APP_NAME=coolstore-ui
+    env.NAMESPACE_DEV='coolstore-micro-dev'
+    env.NAMESPACE_TEST='coolstore-micro-demo'
+    env.APP_NAME='coolstore-ui'
 }
 
 // Building on the master for this demo
