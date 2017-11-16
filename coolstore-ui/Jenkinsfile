@@ -8,7 +8,7 @@ node (''){
     env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
     env.NAMESPACE_DEV='coolstore-micro-dev'
     env.NAMESPACE_TEST='coolstore-micro-demo'
-    env.APP_NAME='coolstore-ui'
+    env.APP_NAME='web-ui'
 }
 
 // Building on the master for this demo
