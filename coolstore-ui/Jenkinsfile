@@ -42,5 +42,6 @@
           stage("Tag and Release Image") {
             input "Promote next Release"
             openshiftTag alias: 'false', apiURL: '', authToken: '', destStream: 'web-ui', destTag: 'latest', destinationAuthToken: '', destinationNamespace: 'coolstore-micro-demo', namespace: '', srcStream: 'web-ui', srcTag: 'latest', verbose: 'false'
+//            openshiftTag alias: 'false', apiURL: '', authToken: '', destStream: 'web-ui', destTag: 'next-release', destinationAuthToken: '', destinationNamespace: '', namespace: '', srcStream: 'web-ui', srcTag: 'latest', verbose: 'false'
           }
         }
