@@ -5,8 +5,8 @@ var express = require('express'),
     fs = require('fs'),
     app = express(),
     path = require("path"),
-    keycloakConfig = require('./app/keycloak.config.js'),
-    coolstoreConfig = require('./app/coolstore.config.js'),
+    keycloakConfig = require('./www/app/keycloak.config.js'),
+    coolstoreConfig = require('./www/app/coolstore.config.js'),
     Keycloak = require('keycloak-connect'),
     cors = require('cors');
 
@@ -33,9 +33,9 @@ app.get('/coolstore.json', function (req, res, next) {
     res.json(coolstoreConfig);
 });
 
-app.use(express.static(path.join(__dirname, '/views')));
-app.use('/app', express.static(path.join(__dirname, '/app')));
-app.use('/bower_components', express.static(path.join(__dirname, '/bower_components')));
+app.use(express.static(path.join(__dirname, '/www')));
+app.use('/app', express.static(path.join(__dirname, '/www/app')));
+app.use('/bower_components', express.static(path.join(__dirname, '/www/bower_components')));
 
 console.log("coolstore config: " + JSON.stringify(coolstoreConfig));
 console.log("keycloak config: " + JSON.stringify(keycloakConfig));

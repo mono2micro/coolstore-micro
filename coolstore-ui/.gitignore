@@ -1,6 +1,7 @@
 node_modules
-bower_components
+www/bower_components
 target/
+platforms
 .DS_Store
 *.classpath
 *.settings
