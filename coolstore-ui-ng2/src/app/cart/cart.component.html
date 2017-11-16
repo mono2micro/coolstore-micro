@@ -30,6 +30,28 @@
 
   <!-- cart summary -->
   <div class="col-md-4">
+    <pfng-card [config]="summaryConfig"
+               [headerTemplate]="summaryHeaderTemplate"
+               [footerTemplate]="summaryFooterTemplate">
+      <ng-template #summaryHeaderTemplate>
+        <h1 class="card-pf-title">
+          Shopping Summary
+        </h1>
+
+      </ng-template>
+      <div class="card-pf-items">
+        <h2>Cart Total:</h2>
+        <h2>Promotional Item Savings:</h2>
+        <h2>Subtotal:</h2>
+        <h2>Shipping:</h2>
+        <h2>Promotional Shipping Savings:</h2>
+        <h1>Total Order Amount:</h1>
+      </div>
+      <ng-template #summaryFooterTemplate>
+        <button class="btn btn-default">Checkout</button>
+        <button class="btn btn-cancel" routerLink="/" routerLinkActive="true">Keep Shopping</button>
+      </ng-template>
+    </pfng-card>
 
   </div>
 </div>

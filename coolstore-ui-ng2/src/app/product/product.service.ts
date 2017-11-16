@@ -16,10 +16,11 @@ export class ProductService {
   constructor(private http: HttpClient) {  }
 
   updateProducts() {
-    this.http.get('http://localhost:8080/brms-coolstore-demo/rest/products').subscribe(data => {
-        this._products.next(data as Product[]);
-      }
-    );
+    this._products.next(defaultProducts);
+    // this.http.get('http://localhost:8080/brms-coolstore-demo/rest/products').subscribe(data => {
+    //     this._products.next(data as Product[]);
+    //   }
+    // );
   }
 
 }
